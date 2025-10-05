@@ -1,6 +1,6 @@
 # Checkout Champion
 
-Slick, simple Electron starter with dual-site login automation.
+Enhanced checkout champ experience
 
 ## Run
 

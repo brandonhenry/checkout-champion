@@ -1,7 +1,7 @@
 {
   "name": "checkout-champion",
   "version": "0.1.0",
-  "description": "Slick, simple Electron app starter.",
+  "description": "Enhanced checkout champ experience.",
   "main": "main.js",
   "license": "MIT",
   "scripts": {
