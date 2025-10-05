@@ -12,4 +12,8 @@ contextBridge.exposeInMainWorld('auth', {
   loginWithSaved: () => ipcRenderer.invoke('auth:loginWithSaved'),
 });
 
+contextBridge.exposeInMainWorld('embedded', {
+  navigate: (url) => ipcRenderer.invoke('embedded:navigate', url),
+});
+
 

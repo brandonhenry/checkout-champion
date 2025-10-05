@@ -6,6 +6,7 @@ const keytar = require('keytar');
 let mainWindow;
 const store = new Store({ name: 'settings' });
 const SERVICE_NAME = 'CheckoutChampion';
+const SHOW_LOGIN_POPUP_ALWAYS = true; // keep login browser visible for debugging/visibility
 
 const LOGIN_TARGETS = [
   {
@@ -35,6 +36,7 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
+      webviewTag: true,
       devTools: true,
       spellcheck: false,
     },
@@ -200,10 +202,10 @@ async function runAutoLoginFlow(credentials) {
         return { ok: false, reason: 'timeout' };
       })();`, { timeout: 20000 });
     }
-    popup.close();
+    if (!SHOW_LOGIN_POPUP_ALWAYS) popup.close();
     return { ok: true };
   } catch (err) {
-    popup.close();
+    if (!SHOW_LOGIN_POPUP_ALWAYS) popup.close();
     return { ok: false, message: err?.message || String(err) };
   }
 }
@@ -254,6 +256,16 @@ ipcMain.handle('auth:loginWithSaved', async () => {
   const result = await runAutoLoginFlow({ username, password });
   if (!result.ok) return { ok: false, message: result.message || 'Login failed' };
   return { ok: true };
+});
+
+ipcMain.handle('embedded:navigate', async (_e, url) => {
+  try {
+    if (!mainWindow || !url) return { ok: false };
+    // No-op here; navigation is handled in renderer via webview src. Keep for future needs.
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
 });
 
 

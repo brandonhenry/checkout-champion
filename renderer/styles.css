@@ -75,6 +75,15 @@ input[type="email"], input[type="password"]{
 .error{ color: #ff6b6b; font-size: 12px; }
 
 .app{ margin-top: 48px; }
+.webview-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+.webview-col .card{ margin-bottom: 8px; }
+.webview-wrap{ border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: #fff; }
 
 .logo{
   width: 72px; height: 72px;
@@ -148,6 +157,7 @@ h1{
 
 @media (max-width: 900px){
   .cards{ grid-template-columns: 1fr; }
+  .webview-grid{ grid-template-columns: 1fr; }
 }
 
 
