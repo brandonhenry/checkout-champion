@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Checkout Champion</title>
+    <link rel="icon" href="../favicon.png" type="image/png" sizes="any">
+    <link rel="apple-touch-icon" href="../favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,28 +15,40 @@
     <div class="titlebar-drag"></div>
 
     <main class="container">
-      <section class="hero">
+      <section id="auth-view" class="auth">
         <div class="logo">⚡️</div>
-        <h1>Checkout Champion</h1>
-        <p class="tagline">A slick Electron starter—clean, fast, minimal.</p>
-        <div class="cta-row">
-          <button id="primary" class="btn primary">Get Started</button>
-          <button id="secondary" class="btn ghost">Learn More</button>
-        </div>
+        <h1>Sign in</h1>
+        <p class="tagline">Welcome to the Checkout Champion. We improve the checkout champ experience to where you can be more productive.</p>
+        <form id="login-form" class="form">
+          <div class="row">
+            <label>Email</label>
+            <input id="email" type="email" placeholder="you@example.com" autocomplete="username email" required />
+          </div>
+          <div class="row">
+            <label>Password</label>
+            <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+          </div>
+          <div class="row inline">
+            <label class="checkbox">
+              <input id="remember" type="checkbox" checked />
+              <span>Remember me</span>
+            </label>
+            <div id="error" class="error" hidden></div>
+          </div>
+          <div class="cta-row">
+            <button id="signin" class="btn primary" type="submit">Sign In</button>
+            <button id="signinSaved" class="btn ghost" type="button">Use Saved</button>
+          </div>
+        </form>
       </section>
 
-      <section class="cards">
+      <section id="app-view" class="app" hidden>
         <div class="card">
-          <h3>Live Reload</h3>
-          <p>Edit files, save, and refresh—no build step here.</p>
+          <h3>Welcome</h3>
+          <p>You are signed in. Use the app features powered by executeJS.</p>
         </div>
-        <div class="card">
-          <h3>Secure by Default</h3>
-          <p>Context isolation on, no Node globals in the DOM.</p>
-        </div>
-        <div class="card">
-          <h3>Polished UI</h3>
-          <p>Subtle shadows, glassy layers, and crisp typography.</p>
+        <div class="cta-row">
+          <button id="signout" class="btn ghost">Sign Out</button>
         </div>
       </section>
 

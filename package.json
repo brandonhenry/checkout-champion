@@ -5,14 +5,37 @@
   "main": "main.js",
   "license": "MIT",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -mwl"
   },
   "devDependencies": {
-    "electron": "^31.0.0"
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
   },
   "dependencies": {
     "electron-store": "^8.1.0",
-    "keytar": "^7.10.0"
+    "keytar": "^7.9.0"
+  },
+  "build": {
+    "appId": "com.checkout.champion",
+    "productName": "Checkout Champion",
+    "directories": {
+      "buildResources": "."
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache/**"
+    ],
+    "mac": {
+      "icon": "favicon.png"
+    },
+    "win": {
+      "icon": "favicon.png"
+    },
+    "linux": {
+      "icon": "favicon.png"
+    }
   }
 }
 

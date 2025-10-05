@@ -41,6 +41,41 @@ html, body{
   margin-top: 32px;
 }
 
+.auth{
+  max-width: 520px;
+  margin: 48px auto 0;
+}
+
+.form{
+  margin-top: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.row{ display: grid; gap: 6px; margin-bottom: 12px; }
+.row.inline{ display: flex; align-items: center; justify-content: space-between; }
+
+label{ color: var(--subtle); font-size: 12px; }
+
+input[type="email"], input[type="password"]{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+}
+
+.checkbox{ display: inline-flex; gap: 8px; align-items: center; }
+.checkbox input{ width: 18px; height: 18px; }
+
+.error{ color: #ff6b6b; font-size: 12px; }
+
+.app{ margin-top: 48px; }
+
 .logo{
   width: 72px; height: 72px;
   margin: 0 auto 8px;
