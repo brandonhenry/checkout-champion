@@ -1,0 +1,118 @@
+:root{
+  --bg: #0b0f14;
+  --bg-elev: #0e141b;
+  --card: #0f1621;
+  --text: #e6edf3;
+  --subtle: #9fb0c0;
+  --brand: #6ad1ff;
+  --brand-600: #3fb9f0;
+  --accent: #9bffb0;
+  --shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+
+*{ box-sizing: border-box; }
+html, body{
+  height:100%;
+  margin:0;
+  background: radial-gradient(1200px 700px at 20% 0%, rgba(106,209,255,0.08), transparent 60%),
+              radial-gradient(900px 600px at 80% 20%, rgba(155,255,176,0.08), transparent 60%),
+              var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.titlebar-drag{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 32px;
+  -webkit-app-region: drag;
+}
+
+.container{
+  max-width: 980px;
+  margin: 64px auto 48px;
+  padding: 0 24px;
+}
+
+.hero{
+  text-align: center;
+  margin-top: 32px;
+}
+
+.logo{
+  width: 72px; height: 72px;
+  margin: 0 auto 8px;
+  display: grid; place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(106,209,255,0.25), rgba(106,209,255,0.05));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), var(--shadow);
+  font-size: 36px;
+}
+
+h1{
+  margin: 8px 0 6px;
+  letter-spacing: 0.4px;
+}
+
+.tagline{
+  color: var(--subtle);
+  margin: 0 0 18px;
+}
+
+.cta-row{
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn{
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor: pointer;
+  transition: 160ms ease;
+  backdrop-filter: blur(6px);
+}
+.btn:hover{ transform: translateY(-1px); }
+.btn:active{ transform: translateY(0); }
+.btn.primary{
+  background: linear-gradient(180deg, var(--brand), var(--brand-600));
+  color: #0b0f14;
+  border: none;
+}
+.btn.ghost{
+  background: rgba(255,255,255,0.04);
+}
+
+.cards{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 36px 0 8px;
+}
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card h3{ margin: 4px 0 6px; }
+.card p{ margin: 0; color: var(--subtle); }
+
+.footer{
+  margin-top: 24px;
+  display:flex; justify-content:center; color: var(--subtle);
+}
+
+@media (max-width: 900px){
+  .cards{ grid-template-columns: 1fr; }
+}
+
+

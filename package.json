@@ -1,0 +1,18 @@
+{
+  "name": "checkout-champion",
+  "version": "0.1.0",
+  "description": "Slick, simple Electron app starter.",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "keytar": "^7.10.0"
+  }
+}
+
