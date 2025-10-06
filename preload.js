@@ -18,4 +18,31 @@ contextBridge.exposeInMainWorld('embedded', {
   navigate: (url) => ipcRenderer.invoke('embedded:navigate', url),
 });
 
+contextBridge.exposeInMainWorld('products', {
+  save: (items) => ipcRenderer.invoke('products:save', items),
+  get: () => ipcRenderer.invoke('products:get'),
+  has: () => ipcRenderer.invoke('products:has'),
+  openViewer: () => ipcRenderer.invoke('products:openViewer'),
+});
+
+
+contextBridge.exposeInMainWorld('qa', {
+  open: () => ipcRenderer.invoke('qa:open')
+});
+
+
+contextBridge.exposeInMainWorld('campaigns', {
+  save: (items) => ipcRenderer.invoke('campaigns:save', items),
+  get: () => ipcRenderer.invoke('campaigns:get'),
+  has: () => ipcRenderer.invoke('campaigns:has'),
+  openViewer: () => ipcRenderer.invoke('campaigns:openViewer'),
+});
+
+contextBridge.exposeInMainWorld('funnels', {
+  save: (items) => ipcRenderer.invoke('funnels:save', items),
+  get: () => ipcRenderer.invoke('funnels:get'),
+  has: () => ipcRenderer.invoke('funnels:has'),
+  openViewer: () => ipcRenderer.invoke('funnels:openViewer'),
+});
+
 

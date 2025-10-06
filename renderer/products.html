@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Products</title>
+    <link rel="icon" href="../favicon.png" type="image/png" sizes="any">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body{ padding: 16px; }
+      .products-layout{ display: grid; grid-template-columns: 360px 1fr 360px; gap: 16px; align-items: stretch; }
+      .products-list{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; box-shadow: var(--shadow); overflow: auto; }
+      .products-list .search{ position: sticky; top: 0; background: linear-gradient(180deg, rgba(11,15,20,0.96), rgba(11,15,20,0.86)); backdrop-filter: blur(6px); margin: -12px -12px 8px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); border-top-left-radius: 14px; border-top-right-radius: 14px; display: flex; gap: 8px; align-items: center; }
+      .products-list .search input{ width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.02); color: var(--text); }
+      .products-list .search .btn{ padding: 8px 10px; }
+      .product-item{ display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; cursor: pointer; }
+      .product-item:hover{ background: rgba(255,255,255,0.06); }
+      .product-item img{ width: 48px; height: 48px; border-radius: 8px; background: #fff; object-fit: cover; }
+      .product-item h4{ margin: 0; font-size: 14px; }
+      .product-item p{ margin: 0; color: var(--subtle); font-size: 12px; }
+      .viewer-card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; box-shadow: var(--shadow); display: grid; grid-template-rows: auto 1fr; gap: 8px; }
+      .viewer-actions{ display: flex; gap: 8px; }
+      .viewer-webview{ border-radius: 12px; overflow: hidden; background: #fff; min-height: 640px; }
+      .inspector-card{ background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 12px; box-shadow: var(--shadow); display: grid; grid-template-rows: auto 1fr; gap: 8px; position: sticky; top: 16px; height: fit-content; max-height: calc(100vh - 48px); }
+      .inspector-header{ display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+      .inspector-title{ font-weight: 800; font-size: 18px; margin: 0; }
+      .inspector-sub{ color: var(--subtle); font-size: 12px; }
+      .meta-list{ overflow: auto; display: grid; gap: 8px; padding-right: 4px; }
+      .meta-row{ display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(255,255,255,0.04); }
+      .meta-row:hover{ background: rgba(255,255,255,0.06); }
+      .meta-label{ color: var(--subtle); font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+      .meta-value{ font-size: 18px; font-weight: 800; word-break: break-all; }
+      .copy-btn{ padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
+      .copy-btn:hover{ background: rgba(255,255,255,0.1); }
+      /* Sidebar collapse/expand */
+      .products-layout.left-collapsed{ grid-template-columns: 1fr 360px; }
+      .products-layout.right-collapsed{ grid-template-columns: 360px 1fr; }
+      .products-layout.left-collapsed .products-list{ display: none; }
+      .products-layout.right-collapsed .inspector-card{ display: none; }
+      .products-layout.left-collapsed.right-collapsed{ grid-template-columns: 1fr; }
+      .edge-toggle{ position: fixed; top: 16px; z-index: 1000; opacity: 0.9; }
+      .edge-toggle.left{ left: 16px; }
+      .edge-toggle.right{ right: 16px; }
+      @media (max-width: 1200px){ .products-layout{ grid-template-columns: 1fr; } .inspector-card{ position: relative; top: auto; max-height: none; } }
+    </style>
+  </head>
+  <body>
+    <div class="products-layout">
+      <div class="products-list">
+        <div class="search">
+          <input id="search" type="search" placeholder="Search by name, SKU, or ID" autocomplete="off" />
+          <button id="collapse-left" class="btn ghost" title="Hide left sidebar">Hide</button>
+        </div>
+        <div id="list"></div>
+      </div>
+      <div class="viewer-card">
+        <div class="viewer-actions">
+          <button id="open-edit" class="btn">View Product</button>
+          <button id="open-duplicate" class="btn">Duplicate Product</button>
+          <button id="open-external" class="btn">Open in Browser</button>
+        </div>
+        <div class="viewer-webview">
+          <webview id="viewer" allowpopups style="width:100%; height:100%; background:#fff;"></webview>
+        </div>
+      </div>
+      <div class="inspector-card">
+        <div class="inspector-header">
+          <h3 class="inspector-title" id="inspector-title">Product</h3>
+          <div class="inspector-sub" id="inspector-sub"></div>
+          <button id="collapse-right" class="btn ghost" title="Hide right sidebar">Hide</button>
+        </div>
+        <div class="meta-list" id="inspector"></div>
+      </div>
+    </div>
+    <button id="expand-left" class="btn ghost edge-toggle left" hidden>Show List</button>
+    <button id="expand-right" class="btn ghost edge-toggle right" hidden>Show Inspector</button>
+    <script>
+      (async function(){
+        const list = document.getElementById('list');
+        const search = document.getElementById('search');
+        const viewer = document.getElementById('viewer');
+        const btnEdit = document.getElementById('open-edit');
+        const btnDup = document.getElementById('open-duplicate');
+        const btnExt = document.getElementById('open-external');
+        const products = await window.products.get();
+        let selected = null;
+        let query = '';
+        const inspector = document.getElementById('inspector');
+        const inspectorTitle = document.getElementById('inspector-title');
+        const inspectorSub = document.getElementById('inspector-sub');
+        // Sidebar collapse state
+        const layout = document.querySelector('.products-layout');
+        const btnCollapseLeft = document.getElementById('collapse-left');
+        const btnCollapseRight = document.getElementById('collapse-right');
+        const btnExpandLeft = document.getElementById('expand-left');
+        const btnExpandRight = document.getElementById('expand-right');
+        const LS_LEFT = 'products:leftCollapsed';
+        const LS_RIGHT = 'products:rightCollapsed';
+        let leftCollapsed = false;
+        let rightCollapsed = false;
+        try { const v = localStorage.getItem(LS_LEFT); if (v !== null) leftCollapsed = JSON.parse(v); } catch {}
+        try { const v = localStorage.getItem(LS_RIGHT); if (v !== null) rightCollapsed = JSON.parse(v); } catch {}
+        function applySidebarState(){
+          if (!layout) return;
+          layout.classList.toggle('left-collapsed', !!leftCollapsed);
+          layout.classList.toggle('right-collapsed', !!rightCollapsed);
+          if (btnExpandLeft) btnExpandLeft.hidden = !leftCollapsed;
+          if (btnExpandRight) btnExpandRight.hidden = !rightCollapsed;
+        }
+        applySidebarState();
+        btnCollapseLeft?.addEventListener('click', () => {
+          leftCollapsed = true; applySidebarState(); try { localStorage.setItem(LS_LEFT, JSON.stringify(true)); } catch {}
+        });
+        btnCollapseRight?.addEventListener('click', () => {
+          rightCollapsed = true; applySidebarState(); try { localStorage.setItem(LS_RIGHT, JSON.stringify(true)); } catch {}
+        });
+        btnExpandLeft?.addEventListener('click', () => {
+          leftCollapsed = false; applySidebarState(); try { localStorage.setItem(LS_LEFT, JSON.stringify(false)); } catch {}
+        });
+        btnExpandRight?.addEventListener('click', () => {
+          rightCollapsed = false; applySidebarState(); try { localStorage.setItem(LS_RIGHT, JSON.stringify(false)); } catch {}
+        });
+
+        function getFiltered(){
+          if (!query) return products;
+          const q = query.toLowerCase();
+          return products.filter(p => {
+            const id = (p.id || '').toString().toLowerCase();
+            const name = (p.name || '').toLowerCase();
+            const sku = (p.sku || '').toLowerCase();
+            return id.includes(q) || name.includes(q) || sku.includes(q);
+          });
+        }
+
+        function render(){
+          list.innerHTML = '';
+          const rows = getFiltered();
+          for (const p of rows){
+            const item = document.createElement('div');
+            item.className = 'product-item';
+            item.innerHTML = `
+              <img src="${p.image || ''}" alt="${p.name || ''}">
+              <div>
+                <h4>${p.name || '(no name)'} <span style="color:#9fb0c0">#${p.id || ''}</span></h4>
+                <p>${p.sku || ''}</p>
+              </div>
+            `;
+            item.addEventListener('click', () => select(p));
+            list.appendChild(item);
+          }
+        }
+
+        function select(p){
+          selected = p;
+          if (p?.editUrl){ viewer.src = p.editUrl; }
+          updateInspectorHeader();
+        }
+
+        function updateInspectorHeader(){
+          const name = selected?.name || '(no name)';
+          const id = selected?.id ? `#${selected.id}` : '';
+          const sku = selected?.sku ? ` • ${selected.sku}` : '';
+          inspectorTitle.textContent = name;
+          inspectorSub.textContent = [id, sku].filter(Boolean).join(' ');
+        }
+
+        function friendlyLabel(name){
+          if (!name) return '';
+          const map = {
+            productId: 'Product ID',
+            productName: 'Product Name',
+            clientProductId: 'Client ID',
+            productCategoryId: 'Category',
+            salestaxCode: 'Tax Code',
+            productSku: 'SKU',
+            productQty: 'Qty Per Order',
+            productCost: 'Product Cost',
+            shippingCost: 'Shipping Cost',
+            weight: 'Weight (lbs)',
+            stockQty: 'Qty Available',
+            msrp: 'MSRP',
+            productDescription: 'Description',
+          };
+          if (map[name]) return map[name];
+          return name
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/[_-]+/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function renderInspector(meta){
+          inspector.innerHTML = '';
+          const rows = [];
+          if (!meta || !Array.isArray(meta.fields)) return;
+          for (const f of meta.fields){
+            const label = friendlyLabel(f.name);
+            const display = (f.text && f.text.trim()) || f.value || '';
+            // Skip empty
+            if (!display) continue;
+            const row = document.createElement('div');
+            row.className = 'meta-row';
+            row.innerHTML = `
+              <div>
+                <div class="meta-label">${label}</div>
+                <div class="meta-value">${display}</div>
+              </div>
+              <button class="copy-btn" title="Copy" aria-label="Copy">Copy</button>
+            `;
+            const copyBtn = row.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', async () => {
+              try { await navigator.clipboard.writeText((f.value || f.text || '').toString()); } catch {}
+            });
+            // Also allow clicking value to copy
+            row.querySelector('.meta-value').addEventListener('click', async () => {
+              try { await navigator.clipboard.writeText((f.value || f.text || '').toString()); } catch {}
+            });
+            inspector.appendChild(row);
+          }
+        }
+
+        async function scrapeMetadata(){
+          if (!viewer) return;
+          try {
+            // Wait a bit for dynamic UI to stabilize
+            await new Promise(r => setTimeout(r, 800));
+            const meta = await viewer.executeJavaScript(`(() => {
+              const out = { fields: [] };
+              const form = document.querySelector('#ProductForm') || document.body;
+              const els = Array.from(form.querySelectorAll('input, select, textarea'));
+              const byName = new Map();
+              for (const el of els){
+                const name = el.getAttribute('name') || el.id || '';
+                if (!name) continue;
+                let value = '';
+                let text = '';
+                if (el.tagName === 'SELECT'){
+                  const sel = el;
+                  if (sel.selectedIndex >= 0) {
+                    value = sel.value || '';
+                    text = sel.options[sel.selectedIndex]?.text?.trim() || '';
+                  }
+                } else if (el.type === 'checkbox'){
+                  value = el.checked ? 'true' : 'false';
+                  text = value;
+                } else {
+                  value = (el.value || '').trim();
+                }
+                // Fallback for select2 rendered text if present
+                if (!text && el.tagName === 'SELECT'){
+                  const wrapper = el.parentElement;
+                  const rendered = wrapper && wrapper.querySelector('.select2-selection__rendered');
+                  if (rendered) text = (rendered.textContent || '').trim();
+                }
+                // Avoid duplicates by name; prefer non-empty display
+                if (!byName.has(name) || text || value) byName.set(name, { name, value, text });
+              }
+              out.fields = Array.from(byName.values());
+              return out;
+            })();`);
+            renderInspector(meta);
+          } catch {}
+        }
+
+        search.addEventListener('input', () => {
+          query = search.value.trim();
+          render();
+        });
+
+        btnEdit.addEventListener('click', () => { if (selected?.editUrl) viewer.src = selected.editUrl; });
+        btnDup.addEventListener('click', () => { if (selected?.duplicateUrl) viewer.src = selected.duplicateUrl; });
+        btnExt.addEventListener('click', () => { if (selected?.editUrl) window.open(selected.editUrl, '_blank'); });
+
+        // Re-scrape metadata on navigation/load changes
+        viewer.addEventListener('did-stop-loading', () => { scrapeMetadata(); });
+        viewer.addEventListener('did-navigate', () => { scrapeMetadata(); });
+        viewer.addEventListener('dom-ready', () => { scrapeMetadata(); });
+
+        render();
+        if (products && products[0]) select(products[0]);
+      })();
+    </script>
+  </body>
+  </html>
+
+

@@ -1,10 +1,138 @@
-const { app, BrowserWindow, shell, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, dialog, session } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 const keytar = require('keytar');
 
 let mainWindow;
 const store = new Store({ name: 'settings' });
+let productsViewerWindow = null;
+let campaignsViewerWindow = null;
+let qaWindow = null;
+let funnelsViewerWindow = null;
+
+function getProducts(){
+  try { return store.get('products') || []; } catch { return []; }
+}
+
+function setProducts(items){
+  try { store.set('products', Array.isArray(items) ? items : []); } catch {}
+}
+
+function openProductsViewer(){
+  if (productsViewerWindow && !productsViewerWindow.isDestroyed()) {
+    productsViewerWindow.focus();
+    return;
+  }
+  productsViewerWindow = new BrowserWindow({
+    width: 1100,
+    height: 760,
+    title: 'Products',
+    backgroundColor: '#0b0f14',
+    autoHideMenuBar: true,
+    show: true,
+    icon: path.join(__dirname, 'favicon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      webviewTag: true,
+    }
+  });
+  productsViewerWindow.removeMenu();
+  productsViewerWindow.loadFile(path.join(__dirname, 'renderer', 'products.html'));
+  productsViewerWindow.on('closed', () => { productsViewerWindow = null; });
+}
+
+function getCampaigns(){
+  try { return store.get('campaigns') || []; } catch { return []; }
+}
+
+function setCampaigns(items){
+  try { store.set('campaigns', Array.isArray(items) ? items : []); } catch {}
+}
+
+function openCampaignsViewer(){
+  if (campaignsViewerWindow && !campaignsViewerWindow.isDestroyed()) {
+    campaignsViewerWindow.focus();
+    return;
+  }
+  campaignsViewerWindow = new BrowserWindow({
+    width: 1100,
+    height: 760,
+    title: 'Campaigns',
+    backgroundColor: '#0b0f14',
+    autoHideMenuBar: true,
+    show: true,
+    icon: path.join(__dirname, 'favicon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      webviewTag: true,
+    }
+  });
+  campaignsViewerWindow.removeMenu();
+  campaignsViewerWindow.loadFile(path.join(__dirname, 'renderer', 'campaigns.html'));
+  campaignsViewerWindow.on('closed', () => { campaignsViewerWindow = null; });
+}
+
+function getFunnels(){
+  try { return store.get('funnels') || []; } catch { return []; }
+}
+
+function setFunnels(items){
+  try { store.set('funnels', Array.isArray(items) ? items : []); } catch {}
+}
+
+function openFunnelsViewer(){
+  if (funnelsViewerWindow && !funnelsViewerWindow.isDestroyed()) {
+    funnelsViewerWindow.focus();
+    return;
+  }
+  funnelsViewerWindow = new BrowserWindow({
+    width: 1100,
+    height: 760,
+    title: 'Funnels',
+    backgroundColor: '#0b0f14',
+    autoHideMenuBar: true,
+    show: true,
+    icon: path.join(__dirname, 'favicon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      webviewTag: true,
+    }
+  });
+  funnelsViewerWindow.removeMenu();
+  funnelsViewerWindow.loadFile(path.join(__dirname, 'renderer', 'funnels.html'));
+  funnelsViewerWindow.on('closed', () => { funnelsViewerWindow = null; });
+}
+
+function openQaWindow(){
+  if (qaWindow && !qaWindow.isDestroyed()) {
+    qaWindow.focus();
+    return;
+  }
+  qaWindow = new BrowserWindow({
+    width: 1100,
+    height: 760,
+    title: 'QA',
+    backgroundColor: '#0b0f14',
+    autoHideMenuBar: true,
+    show: true,
+    icon: path.join(__dirname, 'favicon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      webviewTag: false,
+    }
+  });
+  qaWindow.removeMenu();
+  qaWindow.loadURL('https://pgz.netlify.app/qa');
+  qaWindow.on('closed', () => { qaWindow = null; });
+}
 const SERVICE_NAME = 'CheckoutChampion';
 const SHOW_LOGIN_POPUP_ALWAYS = true; // keep login browser visible for debugging/visibility
 
@@ -168,6 +296,15 @@ async function runAutoLoginFlow(credentials) {
           return null;
         }
 
+        // Guard: only proceed when on login page and username input exists
+        const href = location.href || '';
+        const pathname = (location.pathname || '').toLowerCase();
+        const isLoginUrl = /\/login(\b|\/|\?)/i.test(pathname) || /login|signin/i.test(href);
+        const hasUsernamePre = !!findUsernameInput();
+        if (!isLoginUrl || !hasUsernamePre) {
+          return { ok: true, skipped: true };
+        }
+
         const u = findUsernameInput();
         const p = findPasswordInput();
         if (!u || !p) {
@@ -223,8 +360,7 @@ ipcMain.handle('auth:getSaved', async () => {
 
 ipcMain.handle('auth:getPassword', async () => {
   const username = store.get('username') || '';
-  const remember = !!store.get('remember');
-  if (!username || !remember) return '';
+  if (!username) return '';
   try { return (await keytar.getPassword(SERVICE_NAME, username)) || ''; } catch { return ''; }
 });
 
@@ -289,6 +425,68 @@ ipcMain.handle('embedded:navigate', async (_e, url) => {
   } catch {
     return { ok: false };
   }
+});
+
+ipcMain.handle('products:save', async (_e, items) => {
+  setProducts(items);
+  return { ok: true };
+});
+
+ipcMain.handle('products:get', async () => {
+  return getProducts();
+});
+
+ipcMain.handle('products:has', async () => {
+  const items = getProducts();
+  return !!(items && items.length);
+});
+
+ipcMain.handle('products:openViewer', async () => {
+  openProductsViewer();
+  return { ok: true };
+});
+
+ipcMain.handle('campaigns:save', async (_e, items) => {
+  setCampaigns(items);
+  return { ok: true };
+});
+
+ipcMain.handle('campaigns:get', async () => {
+  return getCampaigns();
+});
+
+ipcMain.handle('campaigns:has', async () => {
+  const items = getCampaigns();
+  return !!(items && items.length);
+});
+
+ipcMain.handle('campaigns:openViewer', async () => {
+  openCampaignsViewer();
+  return { ok: true };
+});
+
+ipcMain.handle('funnels:save', async (_e, items) => {
+  setFunnels(items);
+  return { ok: true };
+});
+
+ipcMain.handle('funnels:get', async () => {
+  return getFunnels();
+});
+
+ipcMain.handle('funnels:has', async () => {
+  const items = getFunnels();
+  return !!(items && items.length);
+});
+
+ipcMain.handle('funnels:openViewer', async () => {
+  openFunnelsViewer();
+  return { ok: true };
+});
+
+ipcMain.handle('qa:open', async () => {
+  openQaWindow();
+  return { ok: true };
 });
 
 

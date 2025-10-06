@@ -18,7 +18,7 @@
       <section id="auth-view" class="auth">
         <div class="logo">⚡️</div>
         <h1>Sign in</h1>
-        <p class="tagline">Welcome to the Checkout Champion. We improve the checkout champ experience to where you can be more productive.</p>
+        <p class="tagline">Enhanced Checkout Champ experience.</p>
         <form id="login-form" class="form">
           <div class="row">
             <label>Email</label>
@@ -48,23 +48,42 @@
             <div class="card">
               <h3>Controls</h3>
               <div class="control-section">
-                <h4>CRM</h4>
+                <h4>Load</h4>
                 <div class="controls-grid">
-                  <button id="crm-back" class="btn">Back</button>
-                  <button id="crm-forward" class="btn">Forward</button>
-                  <button id="crm-reload" class="btn">Reload</button>
-                  <button id="crm-open" class="btn">Open in Browser</button>
-                  <button id="crm-devtools" class="btn full">Toggle DevTools</button>
+                  <button id="crm-load-products" class="btn full">Load Products</button>
+                  <button id="crm-load-campaigns" class="btn full">Load Campaigns</button>
+                  <button id="app-load-funnel" class="btn primary full">Load Funnels</button>
                 </div>
               </div>
               <div class="control-section">
-                <h4>App</h4>
+                <h4>View</h4>
                 <div class="controls-grid">
-                  <button id="app-back" class="btn">Back</button>
-                  <button id="app-forward" class="btn">Forward</button>
-                  <button id="app-reload" class="btn">Reload</button>
-                  <button id="app-open" class="btn">Open in Browser</button>
-                  <button id="app-devtools" class="btn full">Toggle DevTools</button>
+                  <button id="crm-view-products" class="btn primary full" style="display:none;">View Products</button>
+                  <button id="crm-view-campaigns" class="btn full" style="display:none;">View Campaigns</button>
+                  <button id="app-view-funnels" class="btn full" style="display:none;">View Funnels</button>
+                </div>
+              </div>
+              <div class="control-section">
+                <h4>Navigation</h4>
+                <div class="nav-controls">
+                  <button class="btn ghost nav-toggle" data-target="crm">Show CRM Navigation</button>
+                  <div class="controls-grid nav-controls-content" data-scope="crm">
+                    <button id="crm-back" class="btn">Back</button>
+                    <button id="crm-forward" class="btn">Forward</button>
+                    <button id="crm-reload" class="btn">Reload</button>
+                    <button id="crm-open" class="btn">Open in Browser</button>
+                    <button id="crm-devtools" class="btn full">Toggle DevTools</button>
+                  </div>
+                </div>
+                <div class="nav-controls">
+                  <button class="btn ghost nav-toggle" data-target="app">Show App Navigation</button>
+                  <div class="controls-grid nav-controls-content" data-scope="app">
+                    <button id="app-back" class="btn">Back</button>
+                    <button id="app-forward" class="btn">Forward</button>
+                    <button id="app-reload" class="btn">Reload</button>
+                    <button id="app-open" class="btn">Open in Browser</button>
+                    <button id="app-devtools" class="btn full">Toggle DevTools</button>
+                  </div>
                 </div>
               </div>
               <div class="control-section">
@@ -72,22 +91,43 @@
                   <button id="reload-both" class="btn primary full">Reload Both</button>
                 </div>
               </div>
+            <div class="control-section">
+              <div class="controls-grid two">
+                <button id="qa-open" class="btn primary full">QA</button>
+              </div>
+            </div>
             </div>
           </aside>
           <div class="app-content">
-            <div class="card">
-              <h3>Embedded Browser</h3>
-              <p>The login flow and app will run inside the embedded view.</p>
+           
+            <div class="tabs">
+              <button id="tab-crm" class="tab active" type="button">CRM</button>
+              <button id="tab-app" class="tab" type="button">App</button>
+            </div>
+            <!-- Funnel Modal -->
+            <div id="funnel-modal" class="modal" hidden>
+              <div class="modal-backdrop"></div>
+              <div class="modal-dialog">
+                <div class="modal-header">
+                  <h3>Load Funnel</h3>
+                </div>
+                <div class="modal-body">
+                  <label for="funnel-url">Funnel URL</label>
+                  <input id="funnel-url" type="text" placeholder="https://example.com/path" />
+                </div>
+                <div class="modal-footer">
+                  <button id="funnel-cancel" class="btn">Cancel</button>
+                  <button id="funnel-load" class="btn primary">Load</button>
+                </div>
+              </div>
             </div>
             <div class="webview-grid">
               <div class="webview-col">
-                <div class="card"><h3>CRM</h3></div>
                 <div class="webview-wrap">
                   <webview id="webview-crm" src="https://crm.checkoutchamp.com/" allowpopups style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#fff;"></webview>
                 </div>
               </div>
               <div class="webview-col">
-                <div class="card"><h3>App</h3></div>
                 <div class="webview-wrap">
                   <webview id="webview-app" src="https://app.checkoutchamp.com/login" allowpopups style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#fff;"></webview>
                 </div>
