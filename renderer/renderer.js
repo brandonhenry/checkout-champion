@@ -14,6 +14,17 @@ window.addEventListener('DOMContentLoaded', async () => {
   const signout = document.getElementById('signout');
   const viewCrm = document.getElementById('webview-crm');
   const viewApp = document.getElementById('webview-app');
+  const crmBack = document.getElementById('crm-back');
+  const crmForward = document.getElementById('crm-forward');
+  const crmReload = document.getElementById('crm-reload');
+  const crmOpen = document.getElementById('crm-open');
+  const crmDevtools = document.getElementById('crm-devtools');
+  const appBack = document.getElementById('app-back');
+  const appForward = document.getElementById('app-forward');
+  const appReload = document.getElementById('app-reload');
+  const appOpen = document.getElementById('app-open');
+  const appDevtools = document.getElementById('app-devtools');
+  const reloadBoth = document.getElementById('reload-both');
 
   function setLoading(loading) {
     signin.disabled = loading;
@@ -28,13 +39,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   function toLoggedIn() {
-    authView.hidden = true;
-    appView.hidden = false;
+    document.body.classList.add('logged-in');
   }
 
   function toLoggedOut() {
-    appView.hidden = true;
-    authView.hidden = false;
+    document.body.classList.remove('logged-in');
+    // Keep both visible; controls will hide via CSS when not logged in
   }
 
   try {
@@ -43,6 +53,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       email.value = saved.username;
       remember.checked = !!saved.remember;
     }
+    if (signinSaved) signinSaved.disabled = !saved?.hasPassword;
   } catch {}
 
   form.addEventListener('submit', async (e) => {
@@ -50,8 +61,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     setError('');
     setLoading(true);
     try {
-      // Navigate embedded views and attempt in-view automation for both
-      toLoggedIn();
       await new Promise(r => setTimeout(r, 100));
       if (viewApp) viewApp.src = 'https://app.checkoutchamp.com/login';
       if (viewCrm) viewCrm.src = 'https://crm.checkoutchamp.com/';
@@ -60,7 +69,14 @@ window.addEventListener('DOMContentLoaded', async () => {
         automateInWebview(viewApp, creds),
         automateInWebview(viewCrm, creds),
       ]);
+      await Promise.all([
+        waitUntilLoggedIn(viewApp),
+        waitUntilLoggedIn(viewCrm),
+      ]);
+      try { await window.auth.save({ username: creds.username, password: creds.password, remember: !!remember.checked }); } catch {}
+      if (signinSaved) signinSaved.disabled = !remember.checked;
       setLoading(false);
+      toLoggedIn();
     } catch (err) {
       setLoading(false);
       setError('Login error');
@@ -71,22 +87,64 @@ window.addEventListener('DOMContentLoaded', async () => {
     setError('');
     setLoading(true);
     try {
-      toLoggedIn();
+      const saved = await window.auth.getSaved();
+      const pwd = await window.auth.getPassword();
+      const username = saved?.username || '';
+      if (!username || !pwd) throw new Error('No saved credentials');
       await new Promise(r => setTimeout(r, 100));
       if (viewApp) viewApp.src = 'https://app.checkoutchamp.com/login';
       if (viewCrm) viewCrm.src = 'https://crm.checkoutchamp.com/';
-      // We rely on site remember-me for saved session; no credentials here
+      const creds = { username, password: pwd };
+      await Promise.all([
+        automateInWebview(viewApp, creds),
+        automateInWebview(viewCrm, creds),
+      ]);
+      await Promise.all([
+        waitUntilLoggedIn(viewApp),
+        waitUntilLoggedIn(viewCrm),
+      ]);
       setLoading(false);
+      toLoggedIn();
     } catch (err) {
       setLoading(false);
-      setError('Login error');
+      setError(err?.message || 'Login error');
     }
   });
 
   signout?.addEventListener('click', async () => {
     await window.auth.clear();
+    if (signinSaved) signinSaved.disabled = true;
     toLoggedOut();
   });
+
+  // Sidebar controls wiring
+  function attachNavHandlers(prefix, view){
+    const back = document.getElementById(`${prefix}-back`);
+    const forward = document.getElementById(`${prefix}-forward`);
+    const reload = document.getElementById(`${prefix}-reload`);
+    const open = document.getElementById(`${prefix}-open`);
+    const devtools = document.getElementById(`${prefix}-devtools`);
+    if (!view) return;
+    back?.addEventListener('click', () => { try { view.goBack(); } catch {} });
+    forward?.addEventListener('click', () => { try { view.goForward(); } catch {} });
+    reload?.addEventListener('click', () => { try { view.reload(); } catch {} });
+    open?.addEventListener('click', async () => {
+      try {
+        const url = await view.getURL();
+        if (url) window.open(url, '_blank');
+      } catch {}
+    });
+    devtools?.addEventListener('click', () => {
+      try {
+        if (view.isDevToolsOpened && view.isDevToolsOpened()) view.closeDevTools();
+        else view.openDevTools();
+      } catch {}
+    });
+  }
+
+  attachNavHandlers('crm', viewCrm);
+  attachNavHandlers('app', viewApp);
+  reloadBoth?.addEventListener('click', () => { try { viewCrm?.reload(); viewApp?.reload(); } catch {} });
 });
 
 async function automateInWebview(view, { username, password }) {
@@ -153,5 +211,29 @@ async function automateInWebview(view, { username, password }) {
       return true;
     })();`, { userGesture: true });
   } catch {}
+}
+
+async function waitUntilLoggedIn(view, timeoutMs = 15000) {
+  if (!view) return false;
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      // Wait for loading to settle if navigating
+      if (view.isLoading()) {
+        await new Promise((resolve) => {
+          const onStop = () => { view.removeEventListener('did-stop-loading', onStop); resolve(); };
+          view.addEventListener('did-stop-loading', onStop);
+        });
+      }
+      const stillOnLogin = await view.executeJavaScript(`(() => {
+        const hasPw = !!document.querySelector('input[type=password]');
+        const isLoginUrl = /login|signin/i.test(location.href);
+        return hasPw || isLoginUrl;
+      })();`);
+      if (!stillOnLogin) return true;
+    } catch {}
+    await new Promise(r => setTimeout(r, 500));
+  }
+  return false;
 }
 

@@ -17,6 +17,8 @@ html, body{
   background: radial-gradient(1200px 700px at 20% 0%, rgba(106,209,255,0.08), transparent 60%),
               radial-gradient(900px 600px at 80% 20%, rgba(155,255,176,0.08), transparent 60%),
               var(--bg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   -webkit-font-smoothing: antialiased;
@@ -31,9 +33,12 @@ html, body{
 }
 
 .container{
-  max-width: 980px;
+  max-width: 100%;
   margin: 64px auto 48px;
   padding: 0 24px;
+  min-height: calc(100vh - 112px);
+  display: flex;
+  flex-direction: column;
 }
 
 .hero{
@@ -74,16 +79,26 @@ input[type="email"], input[type="password"]{
 
 .error{ color: #ff6b6b; font-size: 12px; }
 
-.app{ margin-top: 48px; }
+.app{ margin-top: 48px; flex: 1; display: flex; }
+.app-layout{ display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: stretch; width: 100%; }
+.control-sidebar .card{ position: sticky; top: 16px; }
+.control-sidebar{ display: none; }
+.logged-in .control-sidebar{ display: block; }
+.control-section{ margin-top: 12px; }
+.control-section h4{ margin: 0 0 8px; color: var(--subtle); font-weight: 600; font-size: 13px; }
+.controls-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.controls-grid.two{ grid-template-columns: 1fr; }
+.controls-grid .btn.full{ grid-column: 1 / -1; }
 .webview-grid{
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* full width each for easier debugging */
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
   margin-top: 16px;
 }
 .webview-col .card{ margin-bottom: 8px; }
-.webview-wrap{ border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: #fff; }
+.webview-wrap{ border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: #fff; width: 100vh; height: calc(100vh - 64px - 48px - 16px - 24px); }
+.logged-in #auth-view{ display: none; }
 
 .logo{
   width: 72px; height: 72px;
@@ -110,6 +125,8 @@ h1{
   gap: 12px;
   justify-content: center;
 }
+.cta-row #signout{ display: none; }
+.logged-in .cta-row #signout{ display: inline-block; }
 
 .btn{
   padding: 10px 16px;
@@ -157,6 +174,7 @@ h1{
 
 @media (max-width: 900px){
   .cards{ grid-template-columns: 1fr; }
+  .app-layout{ grid-template-columns: 1fr; }
   .webview-grid{ grid-template-columns: 1fr; }
 }
 

@@ -32,6 +32,7 @@ function createMainWindow() {
     vibrancy: process.platform === 'darwin' ? 'under-window' : undefined,
     visualEffectState: process.platform === 'darwin' ? 'active' : undefined,
     icon: path.join(__dirname, 'favicon.png'),
+    fullscreen: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -220,6 +221,13 @@ ipcMain.handle('auth:getSaved', async () => {
   return { username, remember, hasPassword };
 });
 
+ipcMain.handle('auth:getPassword', async () => {
+  const username = store.get('username') || '';
+  const remember = !!store.get('remember');
+  if (!username || !remember) return '';
+  try { return (await keytar.getPassword(SERVICE_NAME, username)) || ''; } catch { return ''; }
+});
+
 ipcMain.handle('auth:clear', async () => {
   const username = store.get('username');
   if (username) {
@@ -227,6 +235,21 @@ ipcMain.handle('auth:clear', async () => {
   }
   store.delete('username');
   store.delete('remember');
+  return { ok: true };
+});
+
+ipcMain.handle('auth:save', async (_e, payload) => {
+  const { username, password, remember } = payload || {};
+  if (!username) return { ok: false };
+  try {
+    store.set('username', username);
+    store.set('remember', !!remember);
+    if (remember && password) {
+      await keytar.setPassword(SERVICE_NAME, username, password);
+    } else {
+      try { await keytar.deletePassword(SERVICE_NAME, username); } catch {}
+    }
+  } catch {}
   return { ok: true };
 });
 

@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('auth', {
   clear: () => ipcRenderer.invoke('auth:clear'),
   login: (payload) => ipcRenderer.invoke('auth:login', payload),
   loginWithSaved: () => ipcRenderer.invoke('auth:loginWithSaved'),
+  save: (payload) => ipcRenderer.invoke('auth:save', payload),
+  getPassword: () => ipcRenderer.invoke('auth:getPassword'),
 });
 
 contextBridge.exposeInMainWorld('embedded', {
